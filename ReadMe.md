@@ -97,7 +97,15 @@ They also have registration bars on both the top and bottom to allow reading for
 
 The CGATs RGB files created are rand500__i400__o957.txt (fwd) and rand500__i400__o957r.txt (rev). The
 reverse set is optional and used to measure the prints in reverse order. This
-provides a self check.
+provides a self check. Also supplied are ".txf" aka, Chart files. These have both RGB values and
+dimension info to initialize i!profiler to prepare to scan the printer charts. These can be dragged
+and dropped onto the Test Chart tab.
+
+![Image](option_trc/refs/i1_chart.png)
+
+Whether you use the CGATs RGB files or the ".tfx" chart files make sure the printed charts correspond
+to that which appears in i1Profiler's windows.
+
 See [**here**](#Advantages-of-a-forward-and-reverse-scan) for
 an example how forward/reverse scans detected contamination in an i1isis.
 If a reverse measurement is made it's averaged and the 5 largest dE errors
@@ -114,6 +122,9 @@ The next step is to extract the embedded CGATs files with the command:
 This extracts 3 CGATs measurement files: rand500_M2.txt, i400_M2.txt and o957_M2.txt.
 Profiles are then made from i400_M2.txt and o957_M2.txt with i1Profiler (in advanced mode)
 by dragging and dropping them onto the measurement tab.
+
+![Image](option_trc/refs/i1_meas.png)
+
 rand500_M2.txt is the measurement file profiles will be tested against.
 ICC profiles can then be created using various options such as 16bit or 8bit
 and high, medium, low lookup table grids. The profiles should be named as desired when created.
