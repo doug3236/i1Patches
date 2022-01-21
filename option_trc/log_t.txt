@@ -1,0 +1,8 @@
+Command: i1patches  -T 33 -e 500 i400.txt o957.txt
+Randomizing and adding edge check colors
+2 pages of 33 rows with 29 columns
+23 check colors are added to the right edge of each page
+Randomized patch count=1857
+Total patch count=1914
+7 patches can be added before additional pages are created
+Creating single, grouped CGATs and Tif image files: rand500__i400__o957
