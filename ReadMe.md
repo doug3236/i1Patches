@@ -61,6 +61,8 @@ profiles and/or evaluate the profiles for accuracy.
 A subdirectory showing an example of each of the options is provided and labeled ***option_#*** where
 ***#*** is the letter for each option. Readme links below.
 
+Typical use to create charts, measure, and analyze profiles
+[Options TRC Details](option_trc/option_trc.md)<br>
 Create a new CGATs file from 1 or more others with optional range selection.
 [Option A Details](option_a/option_a.md)<br>
 Evaluate CGATs measurements against one or more ICC profiles.

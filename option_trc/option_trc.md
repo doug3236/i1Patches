@@ -4,25 +4,33 @@
 Create charts to compare performance of one or more patch sets. Combines one or more RGB patch sets
 with optional, independantly generated random RGB patches.
 
+#### Summary of the 3 steps for typical use of i1Patches
+
 As an example we use the i1Profiler 400 patch set and a custom 957 patch set.
 Initial RGB files: **i400.txt**, a CGATs RGB set from i1Profiler and **o957.txt**, a CGATs RGB
-set.
+set. This batch file creates 2 pages of charts containing the aggregated RGB patch
+sets as well as forward/reverse CGATs and ".txf" i1Profiler chart files for measuring prints.
 
-    execute_c.bat
-    execute_r.bat
-    execute_t.bat
-    i400.txt
-    i400_medium_16bit_M2.icm
-    i400_small_16bit_M2.icm
-    i400_small_8bit_M2.icm
-    o957.txt
-    o957_medium_16bit_M2.icm
-    o957_small_16bit_M2.icm
-    o957_small_8bit_M2.icm
-    option_t.md
-    rand500__i400__o957Fr_M2.txt
-    rand500__i400__o957r_M2.txt
-    rand500__i400__o957_M2.txt
+    batch command: execute_t
+    i1patches -T 33 -e 500 i400.txt o957.txt
+
+The next batch file extracts forward/reverse averaged CGATs measurement patch files
+i400_M2.txt and o957_M2.txt, as well as the random RGB file, "rand500_M2.txt", 
+used for analysis of profile accuracy.
+
+    batch command: execute_r
+    i1patches -R rand500__i400__o957_M2.txt
+
+Then the ICC profiles from the 2 measurement files are created using i1Profiler. 2 profiles
+are created from each measurement file to compare relative performance. 8 bit, small grid
+and 16 bit medium grid. The rand500_M2.txt file is then used to evaluate each
+of the 4 profiles.
+
+    batch command: execute_c
+    i1patches -C rand500_M2.txt i400_small_8bit.icm i400_medium_16bit.icm o957_small_8bit.icm o957_medium_16bit.icm
+
+
+### Details
 
 ****Note for users of Adobe ACPU print utility****<br>
 *When using Adobe's ACPU utility to print tif files without color management add "ACPU"
@@ -88,9 +96,10 @@ These are the saved CGATs i1isis measured files:
 #### Extracting the embedded CGATs files
 
 The next step is to execute the -R option. This de-randomizes and extracts the embedded
-CGATs files creating individual CGATs files for each patch set.
+CGATs files creating individual CGATs files for each patch set. Extracted
+measurement files are automatically averaged in a reverse measurement file exists.
 
-    i1patches -R rand500__i400__o957r_M2.txt
+    i1patches -R rand500__i400__o957_M2.txt
 
 This produces CGATs measurement files just as if you had created and measured them individually.
 
@@ -99,13 +108,15 @@ This produces CGATs measurement files just as if you had created and measured th
     o957_M2.txt
 
 In addition, since we included a reversed CGATs measurement file, it is averaged with
-the forward scan and saved as **rand500__i400__o957_ave_M2.txt**. The other extracted
-measurement files are also automatically averaged.
+the forward scan and saved as **rand500__i400__o957_ave_M2.txt**.
 
 The extracted profile patch measurement files are then used to create profiles by
 dragging and dropping them on the Measurement icon.
 
 ![Image](refs/i1_meas.png)
+
+
+#### To evaluate one or more profiles use the -C option<br>with the random set followed by one or more ICC profiles.
 
 You can now go through the rest of the process selecting whatever options you use
 to make profiles. The small and medium produce 17x17x17 and 33x33x33
@@ -122,8 +133,6 @@ printing any new charts. Here's the results with my Canon Prograf 1000 on glossy
      0.81  0.83       0.87  0.67       1.00  0.53       o957_small_8bit_M2.icm
      0.45  0.44       0.54  0.42       0.74  0.41       o957_medium_16bit_M2.icm
 
-
-#### To evaluate one or more profiles use the -C option<br>with the random set followed by one or more ICC profiles.
 
     i1patches -C rand500_M2.txt i400_medium_16bit_M2.icm o957_medium_16bit_M2.icm
 
