@@ -38,11 +38,13 @@ inline void print_option_info(char option)
     if (option == 'A')
     {
         info =
-            "        i1Patches -A cgats_combined.txt cgats1.txt[start stop] cgats2.txt[start stop] ....\n"
+            "        i1Patches -A cgats_combined.txt cgats1.txt[start stop ...] cgats2.txt[start stop] ....\n"
             "            Combines and one or more CGATs files. Files can be RGB\n"
             "            only or measurement files but must all have the same layout.\n"
             "            Optionally, start and stop indexes can be specified for each cgats.For instance :\n"
             "            \"cgats1.txt 10 55\" will retrieve the 10'th through 55'th entries.\n"
+            "            Multiple ranges can be given. \"cgats1.txt 1 5 7 10\" will retrieve\n"
+            "            the first 9 values skipping the 6th\n"
             "            After combining the patches are randmized and the CGATs file is saved.\n"
             "\n"
             "        i1Patches -Ad cgats_combined.txt cgats1.txt cgats2.txt ....\n"
@@ -342,23 +344,24 @@ void process_a(char**& argv, int& argc)
 {
     // argv* points to filename with optiona start/stop indexes after
     auto process_file = [](int& argc, char**& argv, bool de_randomize) {
-        auto data = CgatsMeasure(argv[0]);
-        auto ipair = get_optional_range(data.lines_f.size(), argc, argv);
+        auto data = CgatsMeasure(argv[0]); argv++; argc--;
+        auto pairs = get_optional_range_v(data.lines_f.size(), argc, argv);
         if (de_randomize) // de-randomize before trimming
             data.lines_f = randomize(data.lines_f, true);   // de-randomize
-        if (ipair.first != -1)
-        {
-            data.lines_f.resize(ipair.second);
-            data.lines_f.erase(data.lines_f.begin(), data.lines_f.begin() + ipair.first - 1);
-            argc -= 3;
-            argv += 3;
-        }
+        if (pairs.size() == 0)
+            return data;  // No subsets, return all CGATs data
         else
         {
-            argc--;
-            argv++;
+            auto data_new = data;
+            data_new.lines_f.resize(0);
+            for (const auto& start_stop : pairs)
+            {
+                data_new.lines_f.insert(data_new.lines_f.end(),
+                    data.lines_f.begin() + start_stop.first-1,
+                    data.lines_f.begin() + start_stop.second);
+            }
+            return data_new;
         }
-        return data;
     };
     validate(argc >= 4, "must aggregate 1 or more cgats files");
     string target_file(argv[2]);

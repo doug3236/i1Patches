@@ -43,4 +43,4 @@ struct ColorAccuracy {
 };
 
 ColorAccuracy print_dE_stats(PatchCollection& collection, string prof_name, bool col_ave);
-std::pair<int, int> get_optional_range(size_t cgats_size, int argc, char** argv);
+vector<std::pair<int, int>> get_optional_range_v(size_t cgats_size, int& argc, char**& argv);

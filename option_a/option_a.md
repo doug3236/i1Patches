@@ -4,11 +4,13 @@ Create new CGATs file by copying all or a part of one or more other CGATs files 
 The result is optionally randomized. This is primarily useful to construct RGB CGATS files from
 all or portions of RGB CGATs files.
 
-    i1Patches -A cgats_combined.txt cgats1.txt[start stop] cgats2.txt[start stop] ....
+    i1Patches -A cgats_combined.txt cgats1.txt [start stop] cgats2.txt [start stop] ....
         Combines and one or more CGATs files. Files can be RGB
-        only or measurement files but must all have the same layout.
-        Optionally, start and stop indexes can be specified for each cgats.For instance:
-        "cgats1.txt 10 55" will retrieve the 10'th through 55'th entries.
+        only or measurement files but must all have the same type and layout.
+        Optionally, start and stop indexes can be specified for each cgats. For instance:
+        cgats1.txt 10 55\" will retrieve the 10'th through 55'th entries.
+        Multiple ranges can be given. \"cgats1.txt 1 5 7 10\" will retrieve
+        the first 9 values skipping the 6th.
         After combining the patches are randmized and the CGATs file is saved.
 
     i1Patches -Ad cgats_combined.txt cgats1.txt cgats2.txt ....

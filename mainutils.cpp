@@ -173,23 +173,30 @@ ColorAccuracy print_dE_stats(PatchCollection& collection, string prof_name, bool
     printf("\n\n");
     return color_dE;
 }
-// returns from to range to select a portion of a CGATs file.
-// returns 0,0 if both optional values after a cgats file are out of range
-// otherwise returns the start and stop ID numbers of a CGATs file to include.
-std::pair<int, int> get_optional_range(size_t cgats_size, int argc, char** argv)
+
+// returns vector of ranges to select one or more portions of a CGATs file.
+// returns 0 length vector if no optional ranges
+// Also adjusts argv, argc to the next potential CGATs file
+vector<std::pair<int, int>> get_optional_range_v(size_t cgats_size, int& argc, char** &argv)
 {
-    std::pair<int, int> ret{-1,-1};
-    if (argc < 3)
-        return ret;         // exit if not enough possible arguments
-    ret.first = get_int(argv[1]);
-    if (ret.first == -1)
-        return ret;
-    ret.second = get_int(argv[2]);
-    if (ret.second == -1)
-        return ret;
-    if (ret.first < 1 || ret.first > cgats_size
-        || ret.second < ret.first || ret.second > cgats_size)
-        validate(false, "Numeric range arguments out of cgats file range");
+    vector<std::pair<int, int>> ret;
+    auto check_range = [cgats_size](int v) {
+        return (v < 1 || v > cgats_size) ? -1 : v;
+    };
+    while (argc >= 2)
+    {
+        int i1 = check_range(get_int(argv[0]));
+        if (i1 == -1)              // normal exist if no more location pairs
+            return ret;
+        int i2 = check_range(get_int(argv[1]));
+        if (i1 > 0 && i2 > 0)
+        {
+            ret.push_back({ i1, i2 });
+            argc -= 2;
+            argv += 2;
+        }
+        else
+            throw std::runtime_error("Error in optional location pairs");
+    }
     return ret;
 }
-
