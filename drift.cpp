@@ -23,6 +23,14 @@ ProcessDuplicates::ProcessDuplicates()
     defined_rgb.insert(defined_rgb.end(), rgbc.begin(), rgbc.end());
 }
 
+vector<V6> ProcessDuplicates::get_both_averaged_rgblab() const
+{
+    vector<V6> ret;
+    for (size_t i = 0; i < both_p.rgb.size(); i++)
+        ret.push_back(V6{ both_p.rgb[i][0],both_p.rgb[i][1],both_p.rgb[i][2],
+                          both_p.lab[i][0],both_p.lab[i][1],both_p.lab[i][2] });
+    return ret;
+}
 
 ProcessDuplicates::ProcessDuplicates(vector<V6> in_rgblab) : ProcessDuplicates() 
 {

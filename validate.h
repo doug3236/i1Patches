@@ -35,6 +35,13 @@ inline bool is_suffix_tif(std::string fname)
     return fname.substr(fname.size() - 4, 4) == ".tif";
 }
 
+inline bool is_suffix_ti1(std::string fname)
+{
+    if (fname.size() <= 4)
+        return false;
+    return fname.substr(fname.size() - 4, 4) == ".ti1";
+}
+
 inline bool is_suffix_icm(std::string fname)
 {
     if (fname.size() <= 4)

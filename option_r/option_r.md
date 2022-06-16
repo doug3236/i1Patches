@@ -33,7 +33,7 @@ files for each patch set. The first patches in the
 measurement file contain encoded RGB values from the names and sizes of aggregated
 files. This is used to reconstruct the associated measurement files.
 
-    i1patches -R rand500__i400__o957_M2.txt
+    i1patches -R P_rand500__i400__o957_M2.txt
 
 This de-randmizes and extracts CGATs measurement files.
 Since these CGATs were randomized and distributed across the printed charts any differences
@@ -45,7 +45,7 @@ comparisons.
     o957_M2.txt
 
 In addition, since we included a reversed CGATs measurement file, it is averaged with
-the forward scan and saved as **rand500__i400__o957_ave_M2.txt**. The other extracted
+the forward scan and saved as **P_rand500__i400__o957_ave_M2.txt**. The other extracted
 measurement files are also automatically averaged.
 
 
@@ -54,16 +54,16 @@ There are repeating sequences of 10 color patches along the right edge of each m
 These are 4 neutrals, 3 primaries and 3 light primaries.
 
 
-    Command: i1patches  -R rand500__i400__o957_M2.txt
+    Command: i1patches  -R P_rand500__i400__o957_M2.txt
 
-    File: rand500__i400__o957_M2.txt
+    File: P_rand500__i400__o957_M2.txt
     3 black patches, ave Lab:  1.91 -0.02 -0.21
     3 white patches, ave Lab: 94.77 -1.31 -2.24
 
     33 rows, 2 pages
 
     Extracting Measurement Files: rand500_M2.txt i400_M2.txt o957_M2.txt 
-    File:rand500__i400__o957_M2.txt
+    File:P_rand500__i400__o957_M2.txt
     Check Colors per Page: 23
                 RGB         Mean L*a*b*        StDev L*a*b*        Slope L*a*b*
     NeutH :  200 200 200   76.1  -0.9   0.5    0.08  0.04  0.05    0.06 -0.02  0.06

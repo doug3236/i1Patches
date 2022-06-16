@@ -82,11 +82,16 @@ void make_i1pro2(const vector<RGB>& patch_list_all, const string& imagename, int
     validate((int(patch_list_all.size()) / page_count) % 609 == 0, "I1Pro2 page size must be 609 patches");
     for (int page_num = 0; page_num < page_count; page_num++)
     {
-        vector<RGB> patch_list(patch_list_all.begin() + page_num * patch_count, patch_list_all.begin() + (page_num + 1) * patch_count);
+        //vector<RGB> patch_list(patch_list_all.begin() + page_num * patch_count, patch_list_all.begin() + (page_num + 1) * patch_count);
         Font characters;
         // 8mm patch size in 600DPI, patches=189 px sqr
         const int col_count = 29;
         const int row_count = 21;
+        vector<RGB> patch_list;
+        for (int col = 0; col < col_count; col++)
+            for (int row = page_num * row_count; row < (page_num + 1) * row_count; row++)
+                patch_list.push_back(patch_list_all[row + col * row_count*page_count]);
+
         const int patch_size = 189;
         const int um_750 = 18;  // just under 2% larger at 600 DPI
         // image offsets
@@ -97,13 +102,9 @@ void make_i1pro2(const vector<RGB>& patch_list_all, const string& imagename, int
         {
             for (int col = 0; col < col_count; col++)
             {
-                {
-                    Array2D<RGB> val{ patch_size, patch_size, patch_list[row + col * row_count] };
-                    page.insert(val, patch_col_offset + row * patch_size, patch_row_offset + col * patch_size);
-                }
+                Array2D<RGB> val{ patch_size, patch_size, patch_list[row + col * row_count] };
+                page.insert(val, patch_col_offset + row * patch_size, patch_row_offset + col * patch_size);
             }
-            //page.insert(diamond, patch_col_offset + row * patch_size + diamond_voffset, diamond_left_offset);
-            //page.insert(diamond, patch_col_offset + row * patch_size + diamond_voffset, diamond_right_offset);
         }
         Array2D<RGB> bar(patch_size * row_count, um_750);
         page.insert(bar, patch_col_offset, patch_row_offset - um_750);
@@ -119,7 +120,7 @@ void make_i1pro2(const vector<RGB>& patch_list_all, const string& imagename, int
         page.insert(Font().get_line("------", 1), 538, um_750 + patch_col_offset + col_count * patch_size);
         for (int i = 1; i <= 21; i++)
         {
-            string s = std::to_string(i);
+            string s = std::to_string(i+page_num*21);
             string se = s;
             while (s.length() < 6)
             {

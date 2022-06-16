@@ -1,0 +1,11 @@
+set ARGYLL_CREATE_WRONG_VON_KRIES_OUTPUT_CLASS_REL_WP=1
+SET FNAME=x6_M2
+SET PROFNAME=x6_M2A
+txt2ti3 -v %FNAME%.txt %FNAME%
+colprof -v -r .3 -qh -D %PROFNAME%.icm -O %PROFNAME%.icm %FNAME%
+
+SET FNAME=opt957_M2
+SET PROFNAME=opt957_M2A
+txt2ti3 -v %FNAME%.txt %FNAME%
+colprof -v -r .3 -qh -D %PROFNAME%.icm -O %PROFNAME%.icm %FNAME%
+

@@ -83,7 +83,7 @@ struct StatV3 {
 class CgatsMeasure {
 public:
     CgatsMeasure() = default;
-    CgatsMeasure(const string & cgatsfile);
+    CgatsMeasure(const string & cgatsfile, size_t set_number=1);
     ptrdiff_t rgb_loc{};  // location of RGB_R in fields
     ptrdiff_t lab_loc{};  // location of LAB_L in fields
     vector<vector<float>> lines_f{};  // floats of line numerical values in CGATs file (offset to RGB)
@@ -105,6 +105,7 @@ private:
 struct PatchHeader
 {
     bool header_valid{ false };
+    bool is_i1pro2{};
     size_t patches_per_page;    // 957 on full, 33 row page
     size_t rows_per_page;       // 33 on full page
     size_t pages;               // number of printer pages in aggregated patch set
@@ -135,15 +136,18 @@ struct CGATS_Bidir
     void print_random_patch_stats();
 };
 
-    PatchHeader get_header(const vector<V3>& v);
+PatchHeader get_header(const vector<V3>& v_in);
 
 
 
 // encode rows/patches in first V3 of combined patch file
-inline V3 encode_rows_and_patch_count(int rows_per_page, int total_patches)
+// encode i1pro2 by creating header as if rows_per_page is 36 (0xf)
+inline V3 encode_rows_and_patch_count(int rows_per_page, int total_patches, bool is_i1pro2)
 {
     //validate(rows >= 21 && 33 >= rows, "rows per page must be between 21 and 33");
     int combo = rows_per_page - 21 | total_patches << 4;
+    if (is_i1pro2)
+        combo = 15 | total_patches << 4;
     V3 ret;
     ret[0] = float(combo % 256); combo = combo >> 8;
     ret[1] = float(combo % 256); combo = combo >> 8;

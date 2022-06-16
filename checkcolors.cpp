@@ -6,6 +6,7 @@
 #include "cgats.h"
 #include "i1isis.h"
 #include "pair_eval.h"
+#include "mainutils.h"
 
 using namespace cgats_utilities;
 using namespace std::string_literals;
@@ -401,7 +402,7 @@ vector<V3> generate_rand_vecs(int argc, char** argv, int &index)
         extras_wide = int(.5f * tmp);
         extras_low = tmp - extras_wide;
     }
-    else if (!all_random && extras > 100)  // add 18 deutral axis RGBs
+    else if (!all_random && extras > 100)  // add 18 neutral axis RGBs
     {
         for (float i = 0; i <= 255; i += 15)
             neutral_rgbs.push_back({ i, i, i });
@@ -473,16 +474,18 @@ vector<V3> generate_rand_vecs(int argc, char** argv, int &index)
 ProfList::ProfList(int argc, char** argv)
 {
     argv++; argc--;
-    bool create_i1isis_tifs = "-T"s == argv[0];
-    bool create_i1Pro2_tifs = "-T2"s == argv[0];
+    bool is_i1isis_tifs = "-T"s == argv[0];
+    bool is_i1Pro2_tifs = "-T2"s == argv[0];
+    bool is_i1isis_struture = is_i1isis_tifs || "-t"s == argv[0];
+    bool is_i1Pro2_struture = is_i1Pro2_tifs || "-t2"s == argv[0];
     argv++; argc--;
     rows_per_page = std::stoi(argv[0]);
     {
         auto rows = std::abs(rows_per_page);
-        if (create_i1isis_tifs)
+        if (is_i1isis_tifs)
             validate(rows >= 21 && rows <= 33, "i1isis charts must have between 21 and 33 rows");
-        else if (create_i1Pro2_tifs)
-            validate(rows==21, "i1Pro2 charts must have 21 rows");
+        else if (is_i1Pro2_tifs)
+            validate(rows == 21, "i1Pro2 charts must have exactly 21 rows");
     }
 
     // Special mode. Just create forward/reverse CGATs and associated tif files
@@ -491,7 +494,6 @@ ProfList::ProfList(int argc, char** argv)
     {
         validate(argc == 2, "Only one file is allowed with -row option");
         rows_per_page = -rows_per_page;
-        validate(21 <= rows_per_page && rows_per_page <= 33, "Rows must be between 21 and 33");
         validate(is_suffix_txt(argv[1]), "Must be \".txt\" file");
         auto label = remove_suffix(argv[1])+"_x";
         vector<V3> rgb = read_cgats_rgb(argv[1]);
@@ -500,23 +502,38 @@ ProfList::ProfList(int argc, char** argv)
             int residual = rgb.size() % (29 * rows_per_page);
             if (residual != 0)
             {
-                printf("Adding %d extra RGB (255,255,255) patches for full chart size\n", 29 * rows_per_page - residual);
+                printf("Adding %d extra RGB (255,255,255)/(200,200,200) patches for full chart size\n", 29 * rows_per_page - residual);
                 for (int i = 0; i < 29 * rows_per_page - residual; i++)
-                    rgb.push_back({ 255,255,255 });
+                    if (i%2 == 0)
+                        rgb.push_back({ 255,255,255 });
+                    else
+                        rgb.push_back({ 200,200,200 });
             }
         }
         int pages = int(rgb.size()) / (29 * rows_per_page);
-        printf("Creating Tifs from %s.  %d Tifs with %d rows\n", argv[1], pages, rows_per_page);
-        make_i1isis(rgb, label, pages);
+        if (is_i1isis_tifs) {
+            printf("Creating Tifs from %s.  %d Tifs with %d rows\n", argv[1], pages, rows_per_page);
+            make_isis_txf(rgb, label, pages);
+            make_i1isis(rgb, label, pages);
+        }
+        else if (is_i1Pro2_tifs)
+        {
+            make_i1pro2(rgb, label, pages);
+            make_i1pro2_txf(rgb, label, pages);
+        }
         cgats_utilities::write_cgats_rgb(rgb, label + ".txt");
-        make_isis_txf(rgb, label, pages);
         // Write a reverse RGB list. Can be used to read in tif files in reverse
         // useful to check consistency of patch reading. Good at picking up transient dust caused errors
         vector<RGB> rev(rgb.rbegin(), rgb.rend());
         cgats_utilities::write_cgats_rgb(rev, label + "r.txt");
-        make_isis_txf(rev, label+"r", pages);
+
+        if (is_i1isis_tifs)
+            make_isis_txf(rev, label+"r", pages);
+        else if (is_i1Pro2_tifs)
+            make_i1pro2_txf(rev, label + "r", pages);
         return;
     }
+
     validate(21 <= rows_per_page && rows_per_page <= 33, "Rows must be between 21 and 33");
     argv++; argc--;
     for (int i = 0; i < argc;)
@@ -539,7 +556,8 @@ ProfList::ProfList(int argc, char** argv)
             set.second = read_cgats_rgb(argv[i]);
             for (auto& x : set.second)          // if RGB values fractional, (truncate - i1Profiler compatibility)
                 for (auto& xx : x)
-                    xx = floor(xx);
+                    if (!global_modifiers::fractional)
+                        xx = floor(xx);
             rgb_set.push_back(set);
             i++;
         }
@@ -552,7 +570,7 @@ ProfList::ProfList(int argc, char** argv)
 
     rgb_all = randomize(rgb_all);   // randomize with seed=1
     rgb_all.insert(rgb_all.begin(), header.begin(), header.end());
-    rgb_all[0]=encode_rows_and_patch_count(rows_per_page, int(rgb_all.size()));
+    rgb_all[0]=encode_rows_and_patch_count(rows_per_page, int(rgb_all.size()), is_i1Pro2_struture);
 
     size_t pages_req = 1 + (rgb_all.size()-1) / (rows_per_page * 29 - 10);
     size_t check_color_count = pages_req * rows_per_page * 29 - rgb_all.size();
@@ -594,9 +612,15 @@ ProfList::ProfList(int argc, char** argv)
     string label = "";
     for (auto& x : rgb_set)
         label += x.first + "__"s;
-    label = label.substr(0, label.length() - 2);
+    label = "P_"s + label.substr(0, label.length() - 2);
     validate(p - rgb_all.begin() == rgb_all.size(), "Bug: p - rgb_all.begin() == rgb_all.size()");
     printf("Creating single, grouped CGATs and Tif image files: %s\n", label.c_str());
+
+    if (is_i1Pro2_struture)
+    {
+        rgb_out = change_i1_order(rgb_out, 21, 29, true);
+        printf("i1Pro2 layout structure.\n");
+    }
 
     cgats_utilities::write_cgats_rgb(rgb_out, label + ".txt");
     // Write a reverse RGB list. Can be used to read in tif files in reverse
@@ -607,11 +631,11 @@ ProfList::ProfList(int argc, char** argv)
     make_isis_txf(rev, label + "r", int(pages_req));
 
     // "-t" option skips tif file generation
-    if (create_i1isis_tifs)
+    if (is_i1isis_tifs)
     {
         make_i1isis(rgb_out, label, int(pages_req));
     }
-    else if (create_i1Pro2_tifs)
+    else if (is_i1Pro2_tifs)
     {
         make_i1pro2(rgb_out, label, int(pages_req));
         make_i1pro2_txf(rgb_out, label, int(pages_req));

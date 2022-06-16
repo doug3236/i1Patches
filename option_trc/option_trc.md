@@ -19,7 +19,7 @@ i400_M2.txt and o957_M2.txt, as well as the random RGB file, "rand500_M2.txt",
 used for analysis of profile accuracy.
 
     batch command: execute_r
-    i1patches -R rand500__i400__o957_M2.txt
+    i1patches -R P_rand500__i400__o957_M2.txt
 
 Then the ICC profiles from the 2 measurement files are created using i1Profiler. 2 profiles
 are created from each measurement file to compare relative performance. 8 bit, small grid
@@ -31,6 +31,13 @@ of the 4 profiles.
 
 
 ### Details
+
+For details showing the difference between using i1Patches for i1Isis v i1Pro2,
+see the subdirectories option_trc\i1Pro2 and option_trc\i1isis. These also show
+how one can use an existing, high patch count (more accurate) profile to evaluate
+different patch sets using the "-X" option by synthesizing measurement files. This
+can simplify the initial selection of a set of patches for actual printer evaluation.
+
 
 ****Note for users of Adobe ACPU print utility****<br>
 *When using Adobe's ACPU utility to print tif files without color management add "ACPU"
@@ -50,17 +57,17 @@ Console output which describes the two tif charts generated:
     Randomized patch count=1857
     Total patch count=1914
     7 patches can be added before additional pages are created
-    Creating single, grouped CGATs and Tif image files: rand500__i400__o957
+    Creating single, grouped CGATs and Tif image files: P_rand500__i400__o957
 
 
-This created two tif files and related CGATs and chart pxf files. The chart file **rand500__i400__o957.txf**,
+This created two tif files and related CGATs and chart pxf files. The chart file **P_rand500__i400__o957.txf**,
 can be loaded into the i1Profiler to print charts using i1Profiler's printing capability.
 
 ![Image](refs/i1_chart.png)
 
 However the tiff charts can be printed with other utilities and have additional registration bars on the
 bottom. This allows these charts to be reverse scanned from last to first and bottom to top using the chart
-"txf" file **rand500__i400__o957r.txf**.
+"txf" file **P_rand500__i400__o957r.txf**.
 
     1-rand500__i400__o957.tif       Tif file, page 1
     2-rand500__i400__o957.tif       Tif file, page 2
@@ -73,7 +80,7 @@ bottom. This allows these charts to be reverse scanned from last to first and bo
     rand500__i400__o957r.txf        i1Profiler chart (txf), for reverse scan
 
 To scan printed charts, drag
-the file **rand500__i400__o957.txf** and drop on the "test chart" icon to initialize
+the file **P_rand500__i400__o957.txf** and drop on the "test chart" icon to initialize
 the test chart dimensions and layout. Then it's ready to measure the charts with the
 i1isis spectrophotometer. After measurement, the measurement data should
 be saved as a CGATs file. Click the save button then save having the same name as the charts
@@ -99,7 +106,7 @@ The next step is to execute the -R option. This de-randomizes and extracts the e
 CGATs files creating individual CGATs files for each patch set. Extracted
 measurement files are automatically averaged in a reverse measurement file exists.
 
-    i1patches -R rand500__i400__o957_M2.txt
+    i1patches -R P_rand500__i400__o957_M2.txt
 
 This produces CGATs measurement files just as if you had created and measured them individually.
 
@@ -108,7 +115,7 @@ This produces CGATs measurement files just as if you had created and measured th
     o957_M2.txt
 
 In addition, since we included a reversed CGATs measurement file, it is averaged with
-the forward scan and saved as **rand500__i400__o957_ave_M2.txt**.
+the forward scan and saved as **P_rand500__i400__o957_ave_M2.txt**.
 
 The extracted profile patch measurement files are then used to create profiles by
 dragging and dropping them on the Measurement icon.

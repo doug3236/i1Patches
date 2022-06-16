@@ -29,6 +29,7 @@ SOFTWARE.
 #include <iostream>
 #include <algorithm>
 #include "array2d.h"
+#include "mainutils.h"
 
 using std::vector;
 using std::array;
@@ -135,10 +136,9 @@ ArrayRGB TiffRead(const char *filename, float gamma)
     return rgb;
 }
 
-bool expand_tif_2_percent{};
 void TiffWrite(const char* file, const Array2D<RGB>& rgb, const string& profile)
 {
-    ArrayRGB rgb3(rgb.nr, rgb.nc, expand_tif_2_percent ? 588 : 600, false, 1.0);
+    ArrayRGB rgb3(rgb.nr, rgb.nc, global_modifiers::expand_tif_2_percent ? 588 : 600, false, 1.0);
     for (int i = 0; i < rgb.nr; i++)
         for (int ii = 0; ii < rgb.nc; ii++)
         {

@@ -32,8 +32,8 @@
         with white patches to be a multiple of 29*n_rows.
         It also produces charts the same as would appear in i1Profiler.
 
-        i1Patches -t ...
-        Same as "-T" above but only create RGB CGATs/txf files and
+        i1Patches -[t|t2} ...
+        Same as "-T" options above but only creates RGB CGATs/txf files and
         doesn't create tif images files. Use this when using
         i1Profiler to print target images from the txf or RGB CGATs files.
         In i1Profiler, use the default patches. 6mm for i1isis(Profile)
@@ -66,7 +66,7 @@ Executing execute.bat
     Randomized patch count=1757
     Total patch count=1827
     3 patches can be added before additional pages are created
-    Creating single, grouped CGATs and Tif image files: rand800__o957
+    Creating single, grouped CGATs and Tif image files: P_rand800__o957
 
     Command: i1patches  -T 33 -e 900 o957.txt
     Randomizing and adding edge check colors
@@ -75,7 +75,7 @@ Executing execute.bat
     Randomized patch count=1857
     Total patch count=1914
     10 patches can be added before additional pages are created
-    Creating single, grouped CGATs and Tif image files: rand900__o957
+    Creating single, grouped CGATs and Tif image files: P_rand900__o957
 
 ****Note for users of Adobe ACPU print utility****<br>
 *When using Adobe's ACPU utility to print tif files without color management add "ACPU"

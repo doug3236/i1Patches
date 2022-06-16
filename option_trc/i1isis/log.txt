@@ -1,0 +1,159 @@
+Command: i1patches  -T 33 -e 500 x6.txt opt957.txt
+Randomizing and adding edge check colors
+2 pages of 33 rows with 29 columns
+38 check colors are added to the right edge of each page
+Randomized patch count=1828
+Total patch count=1914
+36 patches can be added before additional pages are created
+Creating single, grouped CGATs and Tif image files: P_rand500__x6__opt957
+- 
+Command: i1patches  -X .2 .05 P_rand500__x6__opt957.txt p4357_M2.icm
+Synthesizing RGBLAB file from RGB file P_rand500__x6__opt957.txt and profile p4357_M2.icm
+- 
+Command: i1patches  -Ra P_rand500__x6__opt957_M2.txt
+
+File: P_rand500__x6__opt957_M2.txt
+5 black patches, ave Lab:  1.64 -1.46  1.00
+5 white patches, ave Lab: 94.75 -1.32 -1.90
+
+33 rows, 2 pages
+
+Extracting Measurement Files: rand500_M2.txt x6_M2.txt opt957_M2.txt 
+File:P_rand500__x6__opt957_M2.txt
+Check Colors per Page: 38
+            RGB         Mean L*a*b*        StDev L*a*b*        Slope L*a*b*
+NeutH :  200 200 200   76.8  -1.0   0.6    0.30  0.09  0.24   -0.28 -0.04  0.09
+NeutM1:  150 150 150   60.3  -0.1   2.8    0.24  0.17  0.16    0.05 -0.05 -0.09
+NeutM0:  100 100 100   41.8   2.4   0.6    0.22  0.25  0.15    0.09  0.03  0.03
+NeutL :   50  50  50   20.8   4.4  -2.2    0.25  0.16  0.22   -0.09 -0.00  0.05
+LMag  :  255 180 255   82.2  22.9 -12.6    0.18  0.15  0.12   -0.26 -0.01  0.14
+LYel  :  255 255 180   93.4  -7.1  27.1    0.25  0.18  0.27   -0.28  0.13 -0.14
+LCyn  :  180 255 255   84.9 -16.3 -16.5    0.18  0.33  0.23   -0.15  0.46 -0.05
+Mag   :  255   0 255   51.6  80.9  -7.9    0.12  0.27  0.31   -0.11  0.46 -0.20
+Yel   :  255 255   0   89.2  -6.3 109.4    0.19  0.38  0.21   -0.08 -0.58 -0.09
+Cyn   :    0 255 255   58.6 -44.3 -53.6    0.15  0.18  0.13    0.10  0.18  0.00
+
+                 Lab pg: 1           Lab pg: 2          
+NeutH       76.9  -1.0   0.6    76.6  -1.0   0.7
+NeutM1      60.2  -0.1   2.8    60.3  -0.1   2.7
+NeutM0      41.7   2.4   0.5    41.8   2.4   0.6
+NeutL       20.8   4.4  -2.2    20.7   4.4  -2.2
+LMag        82.3  22.9 -12.6    82.1  22.9 -12.5
+LYel        93.6  -7.1  27.1    93.3  -7.0  27.0
+LCyn        84.9 -16.5 -16.5    84.8 -16.1 -16.6
+Mag         51.7  80.6  -7.8    51.6  81.1  -8.0
+Yel         89.3  -6.0 109.4    89.2  -6.6 109.3
+Cyn         58.5 -44.4 -53.6    58.6 -44.2 -53.6
+
+           Difference of each page from global average
+NeutH        0.1   0.0  -0.0    -0.1  -0.0   0.0
+NeutM1      -0.0   0.0   0.0     0.0  -0.0  -0.0
+NeutM0      -0.0  -0.0  -0.0     0.0   0.0   0.0
+NeutL        0.0   0.0  -0.0    -0.0  -0.0   0.0
+LMag         0.1   0.0  -0.1    -0.1  -0.0   0.1
+LYel         0.1  -0.1   0.1    -0.1   0.1  -0.1
+LCyn         0.1  -0.2   0.0    -0.1   0.2  -0.0
+Mag          0.1  -0.2   0.1    -0.1   0.2  -0.1
+Yel          0.0   0.3   0.0    -0.0  -0.3  -0.0
+Cyn         -0.1  -0.1  -0.0     0.1   0.1   0.0
+
+Mean Std Dev per page:  0.1955 0.1862
+
+
+Forward/Reverse stats, 5 worst dEs
+Patch#  dE76        RGB              Lab Forward               Lab Reverse         page  row  column
+ 569    0.20    200 200 237     77.84    2.44  -14.27      77.86    2.40  -14.08    1      8    18
+ 372    0.19    146 219   0     66.59  -26.51   74.96      66.73  -26.38   74.94    1      9    12
+ 317    0.19    125  49  81     38.21   27.47    8.12      38.26   27.29    8.16    1     20    10
+ 291    0.19    241  10 123     51.37   70.77   25.33      51.55   70.78   25.28    1     27     9
+1131    0.19    128  91 200     52.39   22.59  -28.54      52.57   22.59  -28.49    2      9     6
+
+             dE76 distribution (less than)
+   10%   20%   30%   40%   50%   60%   70%   80%   90%
+  0.04  0.05  0.06  0.07  0.08  0.09  0.10  0.11  0.13
+- 
+Command: i1patches  -C rand500_M2.txt x6_M2A.icm opt957_M2A.icm
+Dev Neutral 3 patch consistency, mean: 0.41, max: 0.73
+Dev Neutral 7 patch consistency, mean: 0.46, max: 1.88
+Creating Results File: rand500_M2__x6_M2A.icm.txt
+
+---Using profile x6_M2A.icm to analyze 500 patches, Dup Count: 1---
+
+Neutrals N=52, Ave Sat:  2.71
+      Delta E 1976  Ave:0.899, Est. error of Ave:0.067
+      Delta E 2000  Ave:0.902, Est. error of Ave:0.066
+
+                                      dE distribution (percent less than)
+                    Ave         10%   20%   30%   40%   50%   60%   70%   80%   90%
+  Delta E 1976:    0.90        0.39  0.49  0.58  0.70  0.80  0.94  1.08  1.31  1.64
+  Delta E 2000:    0.90        0.36  0.55  0.62  0.72  0.88  0.90  1.00  1.23  1.58
+
+
+
+Low Saturation N=224, Ave Sat: 17.20
+      Delta E 1976  Ave:0.826, Est. error of Ave:0.028
+      Delta E 2000  Ave:0.659, Est. error of Ave:0.025
+
+                                      dE distribution (percent less than)
+                    Ave         10%   20%   30%   40%   50%   60%   70%   80%   90%
+  Delta E 1976:    0.83        0.41  0.50  0.59  0.64  0.73  0.83  0.95  1.10  1.36
+  Delta E 2000:    0.66        0.29  0.36  0.45  0.52  0.58  0.63  0.73  0.90  1.13
+
+
+
+Full Gamut N=224, Ave Sat: 47.95
+      Delta E 1976  Ave:1.043, Est. error of Ave:0.040
+      Delta E 2000  Ave:0.547, Est. error of Ave:0.017
+
+                                      dE distribution (percent less than)
+                    Ave         10%   20%   30%   40%   50%   60%   70%   80%   90%
+  Delta E 1976:    1.04        0.45  0.53  0.69  0.80  0.92  1.06  1.24  1.42  1.75
+  Delta E 2000:    0.55        0.25  0.34  0.38  0.43  0.50  0.56  0.64  0.77  0.90
+
+
+
+
+Creating Results File: rand500_M2__opt957_M2A.icm.txt
+
+---Using profile opt957_M2A.icm to analyze 500 patches, Dup Count: 1---
+
+Neutrals N=52, Ave Sat:  2.71
+      Delta E 1976  Ave:0.556, Est. error of Ave:0.032
+      Delta E 2000  Ave:0.568, Est. error of Ave:0.033
+
+                                      dE distribution (percent less than)
+                    Ave         10%   20%   30%   40%   50%   60%   70%   80%   90%
+  Delta E 1976:    0.56        0.23  0.40  0.44  0.48  0.55  0.59  0.69  0.76  0.90
+  Delta E 2000:    0.57        0.24  0.40  0.47  0.51  0.58  0.61  0.68  0.74  0.85
+
+
+
+Low Saturation N=224, Ave Sat: 17.20
+      Delta E 1976  Ave:0.647, Est. error of Ave:0.021
+      Delta E 2000  Ave:0.504, Est. error of Ave:0.018
+
+                                      dE distribution (percent less than)
+                    Ave         10%   20%   30%   40%   50%   60%   70%   80%   90%
+  Delta E 1976:    0.65        0.28  0.38  0.46  0.56  0.62  0.69  0.74  0.85  1.08
+  Delta E 2000:    0.50        0.21  0.29  0.35  0.40  0.45  0.53  0.59  0.70  0.86
+
+
+
+Full Gamut N=224, Ave Sat: 47.95
+      Delta E 1976  Ave:0.830, Est. error of Ave:0.030
+      Delta E 2000  Ave:0.432, Est. error of Ave:0.013
+
+                                      dE distribution (percent less than)
+                    Ave         10%   20%   30%   40%   50%   60%   70%   80%   90%
+  Delta E 1976:    0.83        0.35  0.42  0.55  0.66  0.72  0.84  1.01  1.17  1.47
+  Delta E 2000:    0.43        0.21  0.26  0.31  0.36  0.40  0.46  0.51  0.59  0.71
+
+
+
+
+Device Neutrals  Low Saturation    Full Gamut
+ dE76  dE2k       dE76  dE2k       dE76  dE2k
+ 0.90  0.90       0.83  0.66       1.04  0.55       x6_M2A.icm
+ 0.56  0.57       0.65  0.50       0.83  0.43       opt957_M2A.icm
+
+

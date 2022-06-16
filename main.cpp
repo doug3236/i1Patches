@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <algorithm>
+#include <utility>
 #include <random>
 #include <ctime>
 #include <map>
@@ -130,7 +131,7 @@ inline void print_option_info(char option)
             "            with white patches to be a multiple of 29*n_rows.\n"
             "            It produces charts the same as would appear in i1Profiler.\n"
             "\n"
-            "            i1Patches -t ....\n"
+            "            i1Patches -[t|T2] ....\n"
             "            Same as \"-T\" above but only create RGB CGATs/txf files and\n"
             "            doesn't create tif images files. Use this when using\n"
             "            i1Profiler to print target images from the txf or RGB CGATs files.\n"
@@ -170,50 +171,48 @@ inline void print_option_info(char option)
     {
         info =
             "Summary of options. For detail, use \"i1patches -[T|R||C|A|Z|X|S]\" with the desired option.\n"
-            " -T Create aggregated, randomized set with tif from one or more profile and verification patch sets.\n"
+            " -T Create aggregated, randomized RGB set and tif from one or more profile/verification patch sets.\n"
             " -R Disaggregate and extract measurement sets from CGATs measurement file.\n"
             " -C Compare ICC profiles against verification measurements.\n"
             " -A Create a CGATs set from one or more CGATs sets or portions thereof.\n"
             " -Z Create a pattern for testing color drift over time or between two separate prints.\n"
             " -X Synthesize a measurement file from CGATs RGB and an ICC Profile.\n"
-            " -S Compare two measurement files with identical RGBs.\n";
-            "\nACPU followed by any tif creating command: Expand tif images 2% for Adobe's ACPU.\n";
+            " -S Compare two measurement files with identical RGBs.\n"
+            "\nACPU ..........Before Any Option... Expand tif images 2% for Adobe's ACPU.\n"
+            "FRACTIONAL ....Before Any Option... Enables fractions RGB values, ie (127.5,127.5,127.5)\n";
     }
     printf("%s\n\n", info);
 }
 
+extern bool expand_tif_2_percent;
+
 
 int main(int argc, char** argv)
 {
-    char flag_char{};
     try {
         printf("Command: i1patches ");
         for (int i = 1; i < argc; i++)
             printf(" %s", argv[i]);
         printf("\n");
 
-        // Hack to increase tif image size to partially accomodate Adobe's ACPU shrinkage
-        extern bool expand_tif_2_percent;
-        if (argc > 1 && "ACPU"s == argv[1])
-        {
-            expand_tif_2_percent = true;
-            argv++; argc--;
-        }
+        global_modifiers::update(argc, argv);
 
         if (argc <= 1)  // just list commands
+        {
             print_option_info(' ');
-        else if (argc == 2)
+            exit(0);
+        }
+        if (argc == 2)
         {
             print_option_info(argv[1][1]);
             exit(0);
         }
-        else
-            flag_char = argv[1][1];
 
         // -T: Create an RGB CGATs and txf files and associated i1isis compatible tiff files
         // -T2: Create an RGB CGATs and txf files and associated i1Pro2 compatible tiff files
-        // -t: Create an RGB CGATs and txf files and print stats, no tif files
-        if ("-t"s == argv[1] || "-T"s == argv[1] || "-T2"s == argv[1])
+        // -t: Create an RGB CGATs and txf files for i1isis, no tif files
+        // -t2: Create an RGB CGATs and txf files for i1Pro, no tif files
+        if ("-t2"s == argv[1] || "-t"s == argv[1] || "-T"s == argv[1] || "-T2"s == argv[1])
             // append CGATS targets and optional extra patches creating an aggregate RGB CGATS file
             // and create printable tif files
             ProfList profiles(argc, argv);
@@ -269,11 +268,11 @@ int main(int argc, char** argv)
 }
 
 /*
-* -x generated.txt noise1 noise2 rgb_file.txt iccprofile.icm
-* Use to synthesize RGBLAB "measurement files" using an
-* RGB file and ICC profile. noise1 s/b around .2 and noise2 around .05
-* These can be used to create profiles using smallr RGB sets to
-* simulate accuracy of smaller charts. Mostly this was used for debugging.
+* -X generated.txt noise1 noise2 rgb_file.txt iccprofile.icm
+*    Use to synthesize RGBLAB "measurement files" using an
+*    RGB file and ICC profile. noise1 s/b around .2 and noise2 around .05
+*    These can be used to create profiles using smallr RGB sets to
+*    simulate accuracy of smaller charts. Mostly this was used for debugging.
 */
 void process_x(int argc, char** argv)
 {
@@ -304,8 +303,8 @@ void process_x(int argc, char** argv)
 
 /*
 * -s file1.txt file2.txt
-* Compare two measurement files that have the same RGB values.
-* Useful to lookat time variation in colors, paper/ink longevity
+*    Compare two measurement files that have the same RGB values.
+*    Useful to lookat time variation in colors, paper/ink longevity
 */
 void process_s(int argc, char** argv)
 {
@@ -344,7 +343,21 @@ void process_a(char**& argv, int& argc)
 {
     // argv* points to filename with optiona start/stop indexes after
     auto process_file = [](int& argc, char**& argv, bool de_randomize) {
-        auto data = CgatsMeasure(argv[0]); argv++; argc--;
+        CgatsMeasure data = CgatsMeasure(argv[0], 1);
+        /* Add this section to append additional CGATs tables from a ".ti1" file
+        if (is_suffix_ti1(argv[0])) // ti1 files may have multiple sections, append them
+        {
+            size_t index = 2;
+            for (;; index++)
+            {
+                CgatsMeasure data_extra = CgatsMeasure(argv[0], index);
+                if (data_extra.lines_f.size() == 0)
+                    break;
+                data.lines_f.insert(data.lines_f.end(), data_extra.lines_f.begin(), data_extra.lines_f.end());
+            }
+        }
+        */
+        argv++; argc--;
         auto pairs = get_optional_range_v(data.lines_f.size(), argc, argv);
         if (de_randomize) // de-randomize before trimming
             data.lines_f = randomize(data.lines_f, true);   // de-randomize
@@ -352,7 +365,7 @@ void process_a(char**& argv, int& argc)
             return data;  // No subsets, return all CGATs data
         else
         {
-            auto data_new = data;
+            CgatsMeasure data_new = data;
             data_new.lines_f.resize(0);
             for (const auto& start_stop : pairs)
             {
@@ -374,7 +387,7 @@ void process_a(char**& argv, int& argc)
         accum = process_file(argc, argv, false);
         while (argc >= 1)
         {
-            auto x = process_file(argc, argv, false);
+            CgatsMeasure x = process_file(argc, argv, false);
             validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
                 "CGATs files do not have consistent data field lengths");
             accum.lines_f.insert(accum.lines_f.end(), x.lines_f.begin(), x.lines_f.end());
@@ -388,7 +401,7 @@ void process_a(char**& argv, int& argc)
         accum = process_file(argc, argv, true);
         while (argc >= 1)
         {
-            auto x = process_file(argc, argv, true);
+            CgatsMeasure x = process_file(argc, argv, true);
             validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
                 "CGATs files do not have consistent data field lengths");
             accum.lines_f.insert(accum.lines_f.end(),x.lines_f.begin(), x.lines_f.end());
@@ -401,7 +414,7 @@ void process_a(char**& argv, int& argc)
         accum = process_file(argc, argv, false);
         while (argc >= 1)
         {
-            auto x = process_file(argc, argv, false);
+            CgatsMeasure x = process_file(argc, argv, false);
             validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
                 "CGATs files do not have consistent data field lengths");
             accum.lines_f.insert(accum.lines_f.end(), x.lines_f.begin(), x.lines_f.end());
@@ -416,17 +429,17 @@ void process_a(char**& argv, int& argc)
 
 /*
 * -[R|Rx|r] measurementfile.txt
-* Prints stats and extract measurement files from aggregated measurement file from "-T" option
-* File names are recovered automatically.
+*    Prints stats and extract measurement files from aggregated measurement file from "-T" option
+*    File names are recovered automatically.
 * 
 * -r measurementfile.txt
-* Just statistics are printed, no files extracted.
+*    Just statistics are printed, no files extracted.
 */
 
 void process_r(int argc, char** argv)
 {
     validate(argc==3, "command not recognized");
-    CGATS_Bidir cgats(argv[2], "-R"s == argv[1], "-Rx"s == argv[1], "-Ra"s == argv[1]);
+    CGATS_Bidir cgats(argv[2], "-R"s == argv[1] || "-Ra"s == argv[1], "-Rx"s == argv[1], "-Ra"s == argv[1]);
     if (("-R"s == argv[1] || "-Rx"s == argv[1]) && cgats.has_forward_and_reverse)
         cgats.m_fwd.write_cgats(cgats.file_base + "_ave"s + cgats.file_tail);
 
@@ -446,12 +459,13 @@ void process_r(int argc, char** argv)
 
 /*
 * -Z nrows file.txt
-* nrows must be between 21 and 33 inclusive. This creates a 4x4x4 RGB color grid
-* and a device neutral ramp R=G=B(0,2,4,6,...30)
-* These are randomized and repeated as required to fill nrows*29 patches.
-* Used to optimize head gap, vacuum, etc. prior to profiling.
+*    nrows must be between 21 and 33 inclusive. This creates a 4x4x4 RGB color grid
+*    and a device neutral ramp R=G=B(0,2,4,6,...30)
+*    These are randomized and repeated as required to fill nrows*29 patches.
+*    Used to optimize head gap, vacuum, etc. prior to profiling.
 * 
-* -Z measurementfile.txt read, evaluate and print statistics.
+* -Z measurementfile.txt
+*    read, evaluate and print statistics.
 */
 
 void process_z(int argc, char** argv)
@@ -484,20 +498,37 @@ void process_z(int argc, char** argv)
         CGATS_Bidir cgats1(argv[0], false, true);
         ProcessDuplicates drift1(cgats1.m_fwd.getv_rgblab());
         CGATS_Bidir cgats2;
+        auto save_cgats = [](const ProcessDuplicates& dups, string name_arg)
+        {
+            string name = remove_suffix(name_arg);
+            name = name.substr(0, name.length() - 3) + "_averaged"s + name.substr(name.length() - 3, name.length()) + ".txt"s;
+            vector<V6> cgats_ave_out = dups.get_both_averaged_rgblab();
+            write_cgats_rgblab(cgats_ave_out, name);
+            cout << "Saved averaged RGBLAB CGATs file: " << name << '\n';
+        };
         if (argc == 1)
         {
             print(drift1);
+            save_cgats(drift1, argv[0]);
         }
         else
         {
             cgats2 = CGATS_Bidir(argv[1], false, true);
             ProcessDuplicates drift2(cgats2.m_fwd.getv_rgblab());
             print(drift1, drift2);
+            save_cgats(drift1, argv[0]);
+            save_cgats(drift2, argv[1]);
         }
     }
 }
 
-
+/*
+* -C patch_measurement_file icc1.icm [icc2.icm etc.]
+*    Calculate dEs for Lab to RGBs against measurement LAB
+* 
+* -c patch_measurement_file icc1.icm [icc2.icm etc.]
+*    Calculate dEs for Lab to RGBs against measurement LAB using reverse lookup only AtoB table
+*/
 void process_c(int argc, char** argv)
 {
     bool rev_only = "-c"s == argv[1];
@@ -507,6 +538,8 @@ void process_c(int argc, char** argv)
         return (std::filesystem::path(file).filename().generic_string());
     };
     vector<V6> rgblab = read_cgats_rgblab(argv[0]);
+    if (rgblab.size() >= 250)
+        print_neutral_roughness(rgblab);
     PatchCollection rgb_lab_collection = make_rgb_labm_labi(rgblab);
     vector<ColorAccuracy> profs_summary;
     for (int i = 1; i < argc; i++)

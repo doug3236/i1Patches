@@ -197,12 +197,12 @@ created from the -R and -C command after printing and scanning.
         with white patches to be a multiple of 29*n_rows.
         It also prevents randomization so produces charts the same as would appear in i1Profiler.
 
-    i1Patches -t ....
-        Same as "-T" above but only create i1Profiler iSiS "txf" and RGB CGATs files.
+    i1Patches -[t|t2] ....
+        Same as "-T" above but only create i1Profiler iSiS/i1Pro2 "txf" and RGB CGATs files.
         It doesn't create tif images files. Use this when using
         i1Profiler to print target images from the txf files. The
-        CGATs files must be used for i1Pro2 with care to set the
-        page values to defaults for landscape US letter size.
+        CGATs files must be used with care to set the
+        page values to defaults for profile (i1isis) or landscape (i1isis) US letter size.
         i1Profiler uses the default patche sizes: 6mm for i1isis (Profile)
         and 8mm (Landscape) for i1Pro2 on US letter size paper.
 
@@ -211,9 +211,9 @@ created from the -R and -C command after printing and scanning.
         Extract measurement files. Note that files can end in _M0.txt, _M1.txt of _M2.txt.
         Measurement file should be in i1Profiler's CGATs format that includes,
         at a minimum, RGB and Lab values. Recommend selecting all fields including
-        spectral data. For added data integrity, i1isis tif files can be scanned
+        spectral data. For added data integrity, tif files can be scanned
         in reverse from bottom to top and last to first page. If a CGATs measurement file
-        of the same name except ending in r_M2.txt instead of _M2.txt exists the
+        of the same name except ending in r_M#.txt instead of _M#.txt exists the
         two files will be averaged and statistics printed on how closely the
         patches match. This is useful for detecting transient issues such as lint on the print.
 
@@ -242,8 +242,8 @@ created from the -R and -C command after printing and scanning.
         Combines and one or more CGATs files. Files can be RGB
         only or measurement files but must all have the same type and layout.
         Optionally, start and stop indexes can be specified for each cgats. For instance:
-        cgats1.txt 10 55\" will retrieve the 10'th through 55'th entries.
-        Multiple ranges can be given. \"cgats1.txt 1 5 7 10\" will retrieve
+        "cgats1.txt 10 55" will retrieve the 10'th through 55'th entries.
+        Multiple ranges can be given. "cgats1.txt 1 5 7 10" will retrieve
         the first 9 values skipping the 6th.
         After combining the patches are randmized and the CGATs file is saved.
 
@@ -277,7 +277,7 @@ created from the -R and -C command after printing and scanning.
         from 2 charts that were printed at different times, possibly with different ink levels
         or after changing ink.
 ---
-    i1patches -s file1.txt file2.txt
+    i1patches -S file1.txt file2.txt
         Compare two measurement files that have the same RGB values in the same sequence.
         Useful to look at time variation in colors, paper/ink longevity
 

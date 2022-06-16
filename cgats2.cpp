@@ -10,6 +10,7 @@
 #include "cgats2.h"
 #include "checkcolors.h"
 #include "drift.h"
+#include "mainutils.h"
 
 using namespace std::string_literals;
 
@@ -54,10 +55,22 @@ static vector<vector<string>> tokenize_file(const string& filename)
     return ret;
 }
 
-CgatsMeasure::CgatsMeasure(const string& cgatsfile)
+CgatsMeasure::CgatsMeasure(const string& cgatsfile, size_t set_number)
 {
     filename = cgatsfile;
     lines = tokenize_file(filename);
+    while (set_number > 1 && lines.size() > 0)
+    {
+        for (size_t i = 0; i < lines.size(); i++)
+            if (lines[i].size()==1 && lines[i][0] == "END_DATA")
+            {
+                lines.erase(lines.begin(), lines.begin() + i + 1);
+                set_number--;
+                break;
+            }
+    }
+    if (lines.size() < 5)
+        return;
     num_of_fields = std::stoi(std::find_if(lines.begin(), lines.end(),
         [](const vector<string>& arg) {return arg.size()!=0 && arg[0] == "NUMBER_OF_FIELDS"; })[0][1]);
     num_of_sets = std::stoi(std::find_if(lines.begin(), lines.end(),
@@ -81,6 +94,15 @@ CgatsMeasure::CgatsMeasure(const string& cgatsfile)
         for (size_t col = rgb_loc; col < num_of_fields; col++)
             tmp[col] = std::stof(lines[row+data_offset][col]);
         lines_f.push_back(tmp);
+    }
+    if (is_suffix_ti1(filename) && fields[1]=="RGB_R")  // if Argyll .ti1 patch file make sure RGB starts at offset 1
+    {
+        for (size_t row = 0; row < num_of_sets; row++)
+            for (size_t i = 1; i < 4; i++)
+                if (global_modifiers::fractional)
+                    lines_f[row][i] = lines_f[row][i] * 255 / 100;  // rescale RGB to [0:255]
+                else
+                    lines_f[row][i] = std::round(lines_f[row][i] * 255 / 100);  // round/rescale RGB to [0:255]
     }
 }
 
@@ -202,10 +224,17 @@ bool CgatsMeasure::write_cgats(const string& filename)
     //      RGB File Names Head: (variable, each name null terminated)
     //      Length of RGB file in bytes: 2
     //   null fill to multiple of 3 bytes
-PatchHeader get_header(const vector<V3>& v)
+PatchHeader get_header(const vector<V3>& v_in)
 {
-    auto [rows, len] = decode_rows_and_patch_count(v[0]);
     PatchHeader retx;
+    vector<V3> v = v_in;
+    auto [rows, len] = decode_rows_and_patch_count(v[0]);
+    if (rows == 36)     // indicates the measurement file is from an i1Pro2
+    {
+        rows = 21;
+        retx.is_i1pro2 = true;
+        v = change_i1_order(v, rows, 29, false);
+    }
     if (v.size() % rows != 0)       // must be multiple of rows. Exit if invalid header
         return retx;
     retx.patches_per_page = rows * 29;
@@ -326,6 +355,11 @@ CGATS_Bidir::CGATS_Bidir(string file, bool cgats_output, bool not_structured, bo
     header = get_header(m_fwd.getv_rgb());
     if (!header.header_valid)
         return;
+    if (header.is_i1pro2)
+    {
+        m_fwd.lines_f = change_i1_order(m_fwd.lines_f, 21, 29, false);
+        printf("I1Pro2 structure: ");
+    }
     printf("%zd rows, %zd pages\n", header.rows_per_page,
         header.pages);
 
@@ -371,7 +405,6 @@ CGATS_Bidir::CGATS_Bidir(string file, bool cgats_output, bool not_structured, bo
                     iter_s->first += "_"s + c++;
         }
 
-    // ToDo make Argyll optional
     printf("\nExtracting Measurement Files: ");
     FILE* fp = nullptr;
     if (make_argyll && cgats_output == true)
@@ -394,11 +427,12 @@ CGATS_Bidir::CGATS_Bidir(string file, bool cgats_output, bool not_structured, bo
             {
                 if (fp != nullptr && !(i == 0 && set[i].first.length() >= 4 && set[i].first.substr(0, 4) == "rand"))
                 {
-                    string base = set[i].first + file_tail.substr(0, file_tail.length() - 4);
+                    string base = set[i].first + file_tail.substr(0, file_tail.length() - 4);   // remove ".txt"
                     string baseA = base + "A";
-                    char* pbaseA = baseA.data();
-                    fprintf(fp, "txt2ti3 -v %s.txt %s\n", base.c_str(), pbaseA);
-                    fprintf(fp, "colprof -v -r .2 -qh -D %s.icm -O %s.icm %s\n\n", pbaseA, pbaseA, pbaseA);
+                    fprintf(fp, "SET FNAME=%s\n", base.c_str());
+                    fprintf(fp, "SET PROFNAME=%s\n", baseA.c_str());
+                    fprintf(fp, "txt2ti3 -v %%FNAME%%.txt %%FNAME%%\n");
+                    fprintf(fp, "colprof -v -r .3 -qh -D %%PROFNAME%%.icm -O %%PROFNAME%%.icm %%FNAME%%\n\n");
                 }
             }
         }

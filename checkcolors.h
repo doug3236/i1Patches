@@ -187,3 +187,29 @@ inline vector<RGB_LABM_LABI> get_rgb_labm_labi_averaged(const vector<RGB_LABM_LA
     return ret;
 }
 
+inline void print_neutral_roughness(const vector<V6>& rgblab)
+{
+    auto dE = [&rgblab](int top, const vector<int>& inner_v, const vector<int>& outer_v)
+    {
+        V3 outer{}, inner{};
+        for (int i : { 0, 1, 2 })
+        {
+            for (int loc : inner_v)
+                inner[i] += rgblab[top + loc][i + 3] / inner_v.size();
+            for (int loc : outer_v)
+                outer[i] += rgblab[top + loc][i + 3] / outer_v.size();
+        }
+        return deltaE(inner, outer);
+    };
+    Statistics b3, b7;
+    for (size_t i = 0; i <= 51; i++)    // ignore if not standard dev neutral sequence
+        if (*(V3*)(&rgblab[i][0]) != V3{ 5.f * i, 5.f * i, 5.f * i })
+            return;
+    for (int i = 2; i <= 51; i++)
+        b3.clk(dE(i, { -1 }, { -2, 0 }));
+    for (int i = 6; i <= 51; i++)
+        b7.clk(dE(i, { -2, -3, -4 }, { -6, -5, -1, 0 }));
+    printf("Dev Neutral 3 patch consistency, mean: %4.2f, max: %4.2f\n", b3.ave(), b3.max());
+    printf("Dev Neutral 7 patch consistency, mean: %4.2f, max: %4.2f\n", b7.ave(), b7.max());
+}
+

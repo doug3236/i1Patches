@@ -40,7 +40,7 @@ struct PatchGroup {
     vector<float> dE2k;
 };
 
-    class ProcessDuplicates {
+class ProcessDuplicates {
 public:
     ProcessDuplicates();
     ProcessDuplicates(vector<V6> in_rgblab);
@@ -50,6 +50,7 @@ public:
             rgb_page.push_back(defined_rgb[i % defined_rgb.size()]);
         return randomize(rgb_page); // randomize with seed=1
     }
+    vector<V6> get_both_averaged_rgblab() const;
 private:
     vector<V6> rgblab;              // copy of input rgb:lab
     bool defined_rgb_valid = true;  // if standard drift format. 60 colors, 19 neutrals
