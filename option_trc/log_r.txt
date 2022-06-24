@@ -1,13 +1,13 @@
-Command: i1patches  -R rand500__i400__o957_M2.txt
+Command: i1patches  -R P_rand500__i400__o957_M2.txt
 
-File: rand500__i400__o957_M2.txt
+File: P_rand500__i400__o957_M2.txt
 3 black patches, ave Lab:  1.91 -0.02 -0.21
 3 white patches, ave Lab: 94.77 -1.31 -2.24
 
 33 rows, 2 pages
 
 Extracting Measurement Files: rand500_M2.txt i400_M2.txt o957_M2.txt 
-File:rand500__i400__o957_M2.txt
+File:P_rand500__i400__o957_M2.txt
 Check Colors per Page: 23
             RGB         Mean L*a*b*        StDev L*a*b*        Slope L*a*b*
 NeutH :  200 200 200   76.1  -0.9   0.5    0.08  0.04  0.05    0.06 -0.02  0.06

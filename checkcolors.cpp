@@ -280,10 +280,24 @@ void print_fwd_rev_stats(CGATS_Bidir& cgats, CheckColors *ref_colors)
         auto ipch = x.index;
         if (ref_colors != nullptr && ref_colors->pages > 1)
         {
-            auto ipg = ipch / ref_colors->patches_per_page;
-            auto ipch_pg = ipch - ipg * ref_colors->patches_per_page;
-            auto irow = ipch_pg % (ref_colors->patches_per_page / 29);
-            auto icol = (ipch_pg - irow) / (ref_colors->patches_per_page / 29);
+            size_t ipg{};
+            size_t ipch_pg{};
+            size_t irow{};
+            size_t icol{};
+            if (cgats.header.is_i1pro2)
+            {
+                irow = ipch % (rgb.size() / 29);
+                ipg = irow / 21;
+                irow = irow % 21;
+                icol = ipch / ((rgb.size() / 29));
+            }
+            else
+            {
+                ipg = ipch / ref_colors->patches_per_page;
+                ipch_pg = ipch - ipg * ref_colors->patches_per_page;
+                irow = ipch_pg % (ref_colors->patches_per_page / 29);
+                icol = (ipch_pg - irow) / (ref_colors->patches_per_page / 29);
+            }
             printf("%4zd   %5.2f    %3.0f %3.0f %3.0f   %7.2f %7.2f %7.2f    %7.2f %7.2f %7.2f   %2zd     %2zd    %2zd\n",
                 1 + ipch,
                 x.dE,
@@ -476,8 +490,8 @@ ProfList::ProfList(int argc, char** argv)
     argv++; argc--;
     bool is_i1isis_tifs = "-T"s == argv[0];
     bool is_i1Pro2_tifs = "-T2"s == argv[0];
-    bool is_i1isis_struture = is_i1isis_tifs || "-t"s == argv[0];
-    bool is_i1Pro2_struture = is_i1Pro2_tifs || "-t2"s == argv[0];
+    bool is_i1isis_structure = is_i1isis_tifs || "-t"s == argv[0];
+    bool is_i1Pro2_structure = is_i1Pro2_tifs || "-t2"s == argv[0];
     argv++; argc--;
     rows_per_page = std::stoi(argv[0]);
     {
@@ -570,7 +584,7 @@ ProfList::ProfList(int argc, char** argv)
 
     rgb_all = randomize(rgb_all);   // randomize with seed=1
     rgb_all.insert(rgb_all.begin(), header.begin(), header.end());
-    rgb_all[0]=encode_rows_and_patch_count(rows_per_page, int(rgb_all.size()), is_i1Pro2_struture);
+    rgb_all[0]=encode_rows_and_patch_count(rows_per_page, int(rgb_all.size()), is_i1Pro2_structure);
 
     size_t pages_req = 1 + (rgb_all.size()-1) / (rows_per_page * 29 - 10);
     size_t check_color_count = pages_req * rows_per_page * 29 - rgb_all.size();
@@ -616,30 +630,35 @@ ProfList::ProfList(int argc, char** argv)
     validate(p - rgb_all.begin() == rgb_all.size(), "Bug: p - rgb_all.begin() == rgb_all.size()");
     printf("Creating single, grouped CGATs and Tif image files: %s\n", label.c_str());
 
-    if (is_i1Pro2_struture)
+    if (is_i1Pro2_structure)
     {
         rgb_out = change_i1_order(rgb_out, 21, 29, true);
         printf("i1Pro2 layout structure.\n");
     }
 
+    // Fwd RGB CGATs RGB patch list
     cgats_utilities::write_cgats_rgb(rgb_out, label + ".txt");
-    // Write a reverse RGB list. Can be used to read in tif files in reverse
-    // useful to check consistency of patch reading. Good at picking up transient dust caused errors
     vector<RGB> rev(rgb_out.rbegin(), rgb_out.rend());
+    // Rev RGB CGATs RGB patch list
     cgats_utilities::write_cgats_rgb(rev, label + "r.txt");
-    make_isis_txf(rgb_out, label, int(pages_req));
-    make_isis_txf(rev, label + "r", int(pages_req));
 
-    // "-t" option skips tif file generation
+    if (is_i1isis_structure)
+    {
+        make_isis_txf(rgb_out, label, int(pages_req));
+        make_isis_txf(rev, label + "r", int(pages_req));
+    }
+    if (is_i1Pro2_structure)
+    {
+        make_i1pro2_txf(rgb_out, label, int(pages_req));
+        make_i1pro2_txf(rev, label + "r", int(pages_req));
+    }
     if (is_i1isis_tifs)
     {
         make_i1isis(rgb_out, label, int(pages_req));
     }
-    else if (is_i1Pro2_tifs)
+    if (is_i1Pro2_tifs)
     {
         make_i1pro2(rgb_out, label, int(pages_req));
-        make_i1pro2_txf(rgb_out, label, int(pages_req));
-        make_i1pro2_txf(rev, label + "r", int(pages_req));
     }
 }
 

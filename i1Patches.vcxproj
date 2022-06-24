@@ -182,6 +182,14 @@
     <ClCompile Include="tiffresults.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="option_a\option_a.md" />
+    <None Include="option_c\option_c.md" />
+    <None Include="option_r\option_r.md" />
+    <None Include="option_s\option_s.md" />
+    <None Include="option_trc\option_trc.md" />
+    <None Include="option_t\option_t.md" />
+    <None Include="option_x\option_x.md" />
+    <None Include="option_z\option_z.md" />
     <None Include="ReadMe.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

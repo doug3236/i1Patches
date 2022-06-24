@@ -170,6 +170,7 @@ inline void print_option_info(char option)
     else
     {
         info =
+            "      i!Patches V1.2.1\n"
             "Summary of options. For detail, use \"i1patches -[T|R||C|A|Z|X|S]\" with the desired option.\n"
             " -T Create aggregated, randomized RGB set and tif from one or more profile/verification patch sets.\n"
             " -R Disaggregate and extract measurement sets from CGATs measurement file.\n"

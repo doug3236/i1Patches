@@ -2,7 +2,7 @@ CGATS.17
 
 ORIGINATOR	"i1Profiler - X-Rite, Inc."
 INSTRUMENTATION	"i1iSis 2 XL ; Serial number 0"
-DESCRIPTOR	"rand500__i400__o957_ave_M2.txt"
+DESCRIPTOR	"P_rand500__i400__o957_ave_M2.txt"
 MEASUREMENT_SOURCE	"MeasurementCondition=M2	Filter=UVcut"
 ILLUMINATION_NAME	"D50"
 OBSERVER_ANGLE	"2"

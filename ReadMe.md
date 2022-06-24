@@ -114,12 +114,12 @@ If a reverse measurement is made it's averaged and the 5 largest dE errors
 from the forward and reverse files are listed. The measurement files should be saved as CGATS with
 the same name ending in "_Mn.txt" where n is the uV mode. The reverse measurement file, if made,
 should have exactly the same name except with an "r" appended to the base name prior to the _Mn.txt.
-For this example the regular measurement file is: rand500__i400__o957_M2.txt. The reverse
-measurement file, if used, should be named rand500__i400__o957r_M2.txt.
+For this example the regular measurement file is: P_rand500__i400__o957_M2.txt. The reverse
+measurement file, if used, should be named P_rand500__i400__o957r_M2.txt.
 
 The next step is to extract the embedded CGATs files with the command:
 
-    i1Patches -R rand500__i400__o957_M2.txt
+    i1Patches -R P_rand500__i400__o957_M2.txt
 
 This extracts 3 CGATs measurement files: rand500_M2.txt, i400_M2.txt and o957_M2.txt.
 Profiles are then made from i400_M2.txt and o957_M2.txt with i1Profiler (in advanced mode)
@@ -289,7 +289,7 @@ This is an example where the forward/reverse scan showed significant errors from
 were made evaluating very small patch sets but would have cause significant, and unnoticed errors
 without making a reverse measurement file.
 
-    i1patches -r rand1432__Neut50__t189__t216__t512__t559__t729X_M2.txt
+    i1patches -r P_rand1432__Neut50__t189__t216__t512__t559__t729X_M2.txt
     6 black patches, ave Lab:  2.00 -0.05 -0.36
     6 white patches, ave Lab: 94.76 -1.52 -1.85
     33 rows, 4 pages

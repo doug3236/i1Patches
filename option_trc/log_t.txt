@@ -5,4 +5,4 @@ Randomizing and adding edge check colors
 Randomized patch count=1857
 Total patch count=1914
 7 patches can be added before additional pages are created
-Creating single, grouped CGATs and Tif image files: rand500__i400__o957
+Creating single, grouped CGATs and Tif image files: P_rand500__i400__o957
