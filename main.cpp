@@ -39,20 +39,21 @@ inline void print_option_info(char option)
     if (option == 'A')
     {
         info =
-            "        i1Patches -A cgats_combined.txt cgats1.txt[start stop ...] cgats2.txt[start stop] ....\n"
+            "        i1Patches -A cgats_combined.txt cgats1.txt[start stop ...] cgats2.txt[start stop ...] ...\n"
             "            Combines and one or more CGATs files. Files can be RGB\n"
-            "            only or measurement files but must all have the same layout.\n"
+            "            only or measurement files but if not RGB they must all have the same layout.\n"
+            "            If the target file doesn not end with _Mn.txt, then RGB is assumed.\n"
             "            Optionally, start and stop indexes can be specified for each cgats.For instance :\n"
             "            \"cgats1.txt 10 55\" will retrieve the 10'th through 55'th entries.\n"
             "            Multiple ranges can be given. \"cgats1.txt 1 5 7 10\" will retrieve\n"
             "            the first 9 values skipping the 6th\n"
             "            After combining the patches are randmized and the CGATs file is saved.\n"
             "\n"
-            "        i1Patches -Ad cgats_combined.txt cgats1.txt cgats2.txt ....\n"
+            "        i1Patches -Ad cgats_combined.txt cgats1.txt ....\n"
             "            Same as above but patches are de-randomized.\n"
             "\n"
-            "        i1Patches -a cgats_combined.txt cgats1.txt cgats2.txt ....\n"
-            "            Same as above but patches are not randomized.\n";
+            "        i1Patches -a cgats_combined.txt cgats1.txt ....\n"
+            "            Same as above but patches are not randomized or de-randomized.\n";
     }
     else if (option == 'C')
     {
@@ -170,7 +171,7 @@ inline void print_option_info(char option)
     else
     {
         info =
-            "      i!Patches V1.2.1\n"
+            "      i!Patches V1.2.2\n"
             "Summary of options. For detail, use \"i1patches -[T|R||C|A|Z|X|S]\" with the desired option.\n"
             " -T Create aggregated, randomized RGB set and tif from one or more profile/verification patch sets.\n"
             " -R Disaggregate and extract measurement sets from CGATs measurement file.\n"
@@ -345,19 +346,21 @@ void process_a(char**& argv, int& argc)
     // argv* points to filename with optiona start/stop indexes after
     auto process_file = [](int& argc, char**& argv, bool de_randomize) {
         CgatsMeasure data = CgatsMeasure(argv[0], 1);
-        /* Add this section to append additional CGATs tables from a ".ti1" file
         if (is_suffix_ti1(argv[0])) // ti1 files may have multiple sections, append them
         {
-            size_t index = 2;
+            printf("%s:\n", argv[0]);
+            printf(".ti1 section 1 starts at 1 and ends at %d\n", int(data.lines_f.size()));
+            int index = 2;
             for (;; index++)
             {
                 CgatsMeasure data_extra = CgatsMeasure(argv[0], index);
                 if (data_extra.lines_f.size() == 0)
                     break;
+                printf(".ti1 section %d starts at %d", index, 1+int(data.lines_f.size()));
                 data.lines_f.insert(data.lines_f.end(), data_extra.lines_f.begin(), data_extra.lines_f.end());
+                printf(" and ends at %d\n", int(data.lines_f.size()));
             }
         }
-        */
         argv++; argc--;
         auto pairs = get_optional_range_v(data.lines_f.size(), argc, argv);
         if (de_randomize) // de-randomize before trimming
@@ -379,52 +382,93 @@ void process_a(char**& argv, int& argc)
     };
     validate(argc >= 4, "must aggregate 1 or more cgats files");
     string target_file(argv[2]);
-
-    CgatsMeasure accum;
-    if ("-A"s == argv[1])      // "-A" aggregate files then randomize
+    if (!is_cgats_rgb(target_file))
     {
-        argv += 3;
-        argc -= 3;
-        accum = process_file(argc, argv, false);
-        while (argc >= 1)
+        // This means that the target file is not RGB so all files must have the same internal structure
+        CgatsMeasure accum;
+        if ("-A"s == argv[1])      // "-A" aggregate files then randomize
         {
-            CgatsMeasure x = process_file(argc, argv, false);
-            validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
-                "CGATs files do not have consistent data field lengths");
-            accum.lines_f.insert(accum.lines_f.end(), x.lines_f.begin(), x.lines_f.end());
+            argv += 3;
+            argc -= 3;
+            accum = process_file(argc, argv, false);
+            while (argc >= 1)
+            {
+                CgatsMeasure x = process_file(argc, argv, false);
+                validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
+                    "CGATs files do not have consistent data field lengths");
+                accum.lines_f.insert(accum.lines_f.end(), x.lines_f.begin(), x.lines_f.end());
+            }
+            accum.lines_f = randomize(accum.lines_f);   // randomize with seed=1
         }
-        accum.lines_f = randomize(accum.lines_f);   // randomize with seed=1
-    }
-    else if ("-Ad"s == argv[1])      // "-A" aggregate from de-randomized files
-    {
-        argv += 3;
-        argc -= 3;
-        accum = process_file(argc, argv, true);
-        while (argc >= 1)
+        else if ("-Ad"s == argv[1])      // "-A" aggregate from de-randomized files
         {
-            CgatsMeasure x = process_file(argc, argv, true);
-            validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
-                "CGATs files do not have consistent data field lengths");
-            accum.lines_f.insert(accum.lines_f.end(),x.lines_f.begin(), x.lines_f.end());
+            argv += 3;
+            argc -= 3;
+            accum = process_file(argc, argv, true);
+            while (argc >= 1)
+            {
+                CgatsMeasure x = process_file(argc, argv, true);
+                validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
+                    "CGATs files do not have consistent data field lengths");
+                accum.lines_f.insert(accum.lines_f.end(), x.lines_f.begin(), x.lines_f.end());
+            }
         }
-    }
-    else        // aggregate files
-    {
-        argv += 3;
-        argc -= 3;
-        accum = process_file(argc, argv, false);
-        while (argc >= 1)
+        else        // aggregate files
         {
-            CgatsMeasure x = process_file(argc, argv, false);
-            validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
-                "CGATs files do not have consistent data field lengths");
-            accum.lines_f.insert(accum.lines_f.end(), x.lines_f.begin(), x.lines_f.end());
+            argv += 3;
+            argc -= 3;
+            accum = process_file(argc, argv, false);
+            while (argc >= 1)
+            {
+                CgatsMeasure x = process_file(argc, argv, false);
+                validate(x.lines_f.size() > 0 && x.lines_f[0].size() == accum.lines_f[0].size(),
+                    "CGATs files do not have consistent data field lengths");
+                accum.lines_f.insert(accum.lines_f.end(), x.lines_f.begin(), x.lines_f.end());
+            }
         }
-    }
-    if (is_cgats_rgb(target_file))
-        write_cgats_rgb(accum.getv_rgb(), target_file);
-    else
         accum.write_cgats(target_file);
+    }
+    else
+    {
+        // This means that the target file is RGB so just extract RGB
+        // allowing extraction of RGB from more complex measurement files
+        vector<V3> accum;
+        if ("-A"s == argv[1])      // "-A" aggregate files then randomize
+        {
+            argv += 3;
+            argc -= 3;
+            accum = process_file(argc, argv, false).getv_rgb();
+            while (argc >= 1)
+            {
+                auto rgb = process_file(argc, argv, false).getv_rgb();
+                accum.insert(accum.end(), rgb.begin(), rgb.end());
+            }
+            accum = randomize(accum);   // randomize with seed=1
+        }
+        else if ("-Ad"s == argv[1])      // "-A" aggregate from de-randomized files
+        {
+            argv += 3;
+            argc -= 3;
+            accum = process_file(argc, argv, true).getv_rgb();
+            while (argc >= 1)
+            {
+                auto rgb = process_file(argc, argv, true).getv_rgb();
+                accum.insert(accum.end(), rgb.begin(), rgb.end());
+            }
+        }
+        else        // aggregate files
+        {
+            argv += 3;
+            argc -= 3;
+            accum = process_file(argc, argv, false).getv_rgb();
+            while (argc >= 1)
+            {
+                auto rgb = process_file(argc, argv, false).getv_rgb();
+                accum.insert(accum.end(), rgb.begin(), rgb.end());
+            }
+        }
+        write_cgats_rgb(accum, target_file);
+    }
     printf("Created aggregate file  %s\n", target_file.c_str());
 }
 
@@ -560,12 +604,14 @@ void process_c(int argc, char** argv)
                 x[i].labm[0], x[i].labm[1], x[i].labm[2]);
         }
         fclose(fp);
-        profs_summary.push_back(print_dE_stats(rgb_lab_collection, argv[i], false));
         if (rgb_lab_collection.ave.size() < rgb_lab_collection.full.size())
         {
             printf("\n\n\n-------------AVERAGED PATCHES-------------");
-            print_dE_stats(rgb_lab_collection, argv[i], true);
+            profs_summary.push_back(print_dE_stats(rgb_lab_collection, argv[i], true));
         }
+        else
+            profs_summary.push_back(print_dE_stats(rgb_lab_collection, argv[i], false));
+
         printf("\n\n");
     }
     if (profs_summary[0].dE2k_dev_neutrals == 0)

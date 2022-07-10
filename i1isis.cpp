@@ -144,10 +144,7 @@ void make_isis_txf(const vector<RGB>& patch_list_all, const string& imagename, i
     FILE* fp = fopen((imagename+".txf"s).c_str(), "wt");
     fprintf(fp, txf_0);
     for (int i = 0; i < int(patch_list_all.size()); i++)
-    {
         fprintf(fp, txf_1, i + 1, int(patch_list_all[i][0]), int(patch_list_all[i][1]), int(patch_list_all[i][2]));
-            
-    }
     fprintf(fp, txf_2, imagename.c_str(), margin, margin);
     fclose(fp);
 }
@@ -163,10 +160,7 @@ void make_i1pro2_txf(const vector<RGB>& patch_list_all, const string& imagename,
     FILE* fp = fopen((imagename + ".txf"s).c_str(), "wt");
     fprintf(fp, txf_0);
     for (int i = 0; i < int(patch_list_all.size()); i++)
-    {
         fprintf(fp, txf_1, i + 1, int(patch_list_all[i][0]), int(patch_list_all[i][1]), int(patch_list_all[i][2]));
-
-    }
     fprintf(fp, txf_2_Pro2, imagename.c_str());
     fclose(fp);
 }

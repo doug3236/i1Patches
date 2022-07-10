@@ -8,7 +8,7 @@
         to synthesized Lab values from the RGB file.
         noise0 should approximate the printer's patch to patch variation. noise1 should
         approximate spectro instrument variation when reading the same patches.
-        I use noise0 = .2 and noise1 = .05\n";
+        I use noise0 = .2 and noise1 = .05
 
 
 This option is useful for debugging and workflow checking without actually making measurements.
